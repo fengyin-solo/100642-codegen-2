@@ -82,10 +82,10 @@ import {
 import type { EntryRow } from '@/data/types'
 
 const meta = moduleMeta('emission')
-const columns = ["监控编号", "监控指标", "限值要求", "实测值", "达标判定", "监控日期", "监控人员", "监控状态"]
-const actions = ["提交监控", "判定达标", "标记未达标"]
-const statuses = ["待监控", "监控中", "已达标", "未达标"]
-const stats = [{"label": "待监控指标", "value": 0}, {"label": "已达标指标", "value": 0}, {"label": "未达标指标", "value": 0}]
+const columns = ["监控编号", "监控指标", "限值要求", "实测值", "达标判定", "监控日期", "监控人员", "来源委托单", "监控状态"]
+const actions = ["提交监控", "判定达标", "标记未达标", "完成复核"]
+const statuses = ["待监控", "监控中", "待复核", "已达标", "未达标"]
+const stats = ref([{"label": "待监控指标", "value": 0}, {"label": "待复核记录", "value": 0}, {"label": "已达标指标", "value": 0}, {"label": "未达标指标", "value": 0}])
 
 const rows = ref<EntryRow[]>([])
 const total = ref(0)
@@ -128,6 +128,13 @@ function reload() {
     const payload = listEntries(meta.key, filters.value)
     rows.value = payload.items
     total.value = payload.total
+    const countOf = (status: string) => rows.value.filter((row) => String(row.status) === status).length
+    stats.value = [
+      { label: '待监控指标', value: countOf('待监控') },
+      { label: '待复核记录', value: countOf('待复核') },
+      { label: '已达标指标', value: countOf('已达标') },
+      { label: '未达标指标', value: countOf('未达标') },
+    ]
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '环保指标监控列表读取失败'
   }

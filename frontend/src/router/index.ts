@@ -19,6 +19,7 @@ const Emission = () => import('@/views/emission/index.vue')
 const Shift = () => import('@/views/shift/index.vue')
 const Safetyplan = () => import('@/views/safetyplan/index.vue')
 const Training = () => import('@/views/training/index.vue')
+const Laborder = () => import('@/views/laborder/index.vue')
 
 const router = createRouter({
   history: createWebHistory(),
@@ -42,6 +43,7 @@ const router = createRouter({
     { path: '/shift', name: 'shift', component: Shift },
     { path: '/safetyplan', name: 'safetyplan', component: Safetyplan },
     { path: '/training', name: 'training', component: Training },
+    { path: '/laborder', name: 'laborder', component: Laborder },
   ],
 })
 

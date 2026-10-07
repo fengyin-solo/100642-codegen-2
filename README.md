@@ -60,6 +60,7 @@ npm run build
 | 值班交接班 | `shift` | 交接班记录 | 交接编号、值班班组、班次 |
 | 应急预案管理 | `safetyplan` | 应急预案 | 预案编号、预案名称、适用事故 |
 | 安全培训管理 | `training` | 培训记录 | 培训编号、培训主题、培训对象 |
+| 化验室检测委托 | `laborder` | 检测委托单 | 委托单号、送检样品、化验项目、报告编号 |
 
 ## 约定
 
@@ -68,4 +69,15 @@ npm run build
 - 字段、状态、动作与流转目标集中在 `frontend/src/data/modules.ts`；示例数据在
   `frontend/src/data/seed.ts`。
 - 状态流转只允许在 `local-service.ts` 里改，页面组件不做业务判断。
+- 化验室检测委托单不走通用 `runAction`，受理/在检/出报告/归档的全部约束都在
+  `local-service.ts` 的 `createLabOrder` / `startLabTesting` / `issueLabReport` /
+  `archiveLabOrder` / `returnLabOrder` / `correctLabReport` 里：
+  - 状态只能顺流（受理→在检→已出报告→已归档）；跳过在检直接出报告、在检直接归档一律拦住。
+  - 缺样品来源或化验项目的委托单可以先登记，但卡在受理格，补齐资料才能开始检验。
+  - 回到受理必须写理由，理由进入流转轨迹；报告编号发出后锁定，只能追加更正说明。
+  - 已归档委托单状态锁死（化验室自己也不能动），仅允许补更正说明。
+  - 同委托单位 + 同样品 + 同化验项目重复递送只记一次。
+  - 出报告/更正后检验结果回写环保指标监控（`emission`）采样台账，按委托单号 upsert
+    一条「待复核」监控记录，重复出报告或更正不会产生第二条。
+- 委托单业务规则的离线验证：`node scripts/build-lab-test.mjs && node scripts/verify-laborder.mjs`。
 - 想回到初始数据：清掉浏览器里 `waste-to-energy-plant:entries` 这一项，或调用 `resetModule(模块)`。
