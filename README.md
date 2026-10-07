@@ -56,7 +56,9 @@ npm run build
 | 设备检修管理 | `overhaul` | 检修记录 | 检修编号、检修设备、检修类别 |
 | 备件台账管理 | `spare` | 备品备件 | 备件编号、备件名称、规格型号 |
 | 发电量统计 | `powerstat` | 发电量统计记录 | 统计编号、统计周期、发电量 |
-| 环保指标监控 | `emission` | 环保监控记录 | 监控编号、监控指标、限值要求 |
+| 环保指标监控 | `emission` | 环保监控记录 | 监控编号、监控指标、限值要求、待复核 |
+| 化验室检测委托 | `labtest` | 检测委托单 | 委托单号、送检样品、化验项目、报告编号 |
+| 环保采样台账 | `sampleledger` | 采样台账记录 | 台账编号、关联委托单、检验结果、回写日期 |
 | 值班交接班 | `shift` | 交接班记录 | 交接编号、值班班组、班次 |
 | 应急预案管理 | `safetyplan` | 应急预案 | 预案编号、预案名称、适用事故 |
 | 安全培训管理 | `training` | 培训记录 | 培训编号、培训主题、培训对象 |
@@ -68,4 +70,10 @@ npm run build
 - 字段、状态、动作与流转目标集中在 `frontend/src/data/modules.ts`；示例数据在
   `frontend/src/data/seed.ts`。
 - 状态流转只允许在 `local-service.ts` 里改，页面组件不做业务判断。
+- 化验室检测委托单有自己的状态机（受理→在检→已出报告→已归档），规则集中在
+  `frontend/src/api/lab-service.ts`：只能顺序流转、受理卡口（缺样品来源/化验项目）、
+  退回受理必须写原因、报告编号签发后锁定只可追加更正说明、归档后一律锁死；
+  出报告时结果回写 `sampleledger` 采样台账并在 `emission` 生成一条「待复核」监控记录
+  （均按委托单号去重），重复递送的委托只记一次。`labtest` 不走通用 `runAction`。
+- 化验模块规则测试在 `frontend/test/labtest.test.ts`，`npx vitest run --environment jsdom` 可跑。
 - 想回到初始数据：清掉浏览器里 `waste-to-energy-plant:entries` 这一项，或调用 `resetModule(模块)`。

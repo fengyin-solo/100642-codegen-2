@@ -30,6 +30,14 @@ export function listEntries(key: string, filters: Record<string, string> = {}): 
 
 export function runAction(key: string, id: number, action: string): ActionResult {
   const meta = moduleMeta(key)
+  // 化验委托单有自己的状态机（顺序流转/受理卡口/回写），采样台账只能由出报告回写生成，
+  // 这两类记录一律不走通用动作，避免页面绕过业务规则直接改状态。
+  if (key === 'labtest') {
+    return { ok: false, message: '检测委托单请走「开始检验/出具报告/归档/返回受理」专用操作' }
+  }
+  if (key === 'sampleledger') {
+    return { ok: false, message: '采样台账由化验报告自动回写，不允许手工流转' }
+  }
   const target = meta.actionTargets[action]
   if (!target) {
     return { ok: false, message: `${meta.entity}没有登记「${action}」这个动作` }
